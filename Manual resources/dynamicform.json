@@ -1,0 +1,136 @@
+[
+    {
+        "key":  "searchValue",
+        "templateOptions":  {
+                                "label":  "Search AFAS Organisational Unit",
+                                "useDataSource":  false,
+                                "dataSourceConfig":  {
+                                                         "dataSourceGuid":  "$dataSourceGuid_0",
+                                                         "input":  {
+                                                                       "propertyInputs":  [
+                                                                                              {
+                                                                                                  "propertyName":  "searchValue",
+                                                                                                  "otherFieldValue":  {
+                                                                                                                          "otherFieldKey":  "textInput"
+                                                                                                                      }
+                                                                                              }
+                                                                                          ]
+                                                                   }
+                                                     },
+                                "displayField":  "DisplayName"
+                            },
+        "type":  "input",
+        "summaryVisibility":  "Show",
+        "requiresTemplateOptions":  true,
+        "requiresKey":  true,
+        "requiresDataSource":  false
+    },
+    {
+        "key":  "afasOrgUnits",
+        "templateOptions":  {
+                                "label":  "Organisational Units",
+                                "required":  true,
+                                "grid":  {
+                                             "columns":  [
+                                                             {
+                                                                 "headerName":  "Id",
+                                                                 "field":  "Id"
+                                                             },
+                                                             {
+                                                                 "headerName":  "Display Name",
+                                                                 "field":  "DisplayName"
+                                                             }
+                                                         ],
+                                             "height":  300,
+                                             "rowSelection":  "single"
+                                         },
+                                "dataSourceConfig":  {
+                                                         "dataSourceGuid":  "$dataSourceGuid_1",
+                                                         "input":  {
+                                                                       "propertyInputs":  [
+                                                                                              {
+                                                                                                  "propertyName":  "searchValue",
+                                                                                                  "otherFieldValue":  {
+                                                                                                                          "otherFieldKey":  "searchValue"
+                                                                                                                      }
+                                                                                              }
+                                                                                          ]
+                                                                   }
+                                                     },
+                                "useFilter":  true,
+                                "useDefault":  false
+                            },
+        "type":  "grid",
+        "summaryVisibility":  "Show",
+        "requiresTemplateOptions":  true,
+        "requiresKey":  true,
+        "requiresDataSource":  true
+    },
+    {
+        "key":  "afasJobTitles",
+        "templateOptions":  {
+                                "label":  "AFAS Jobtitle (Optional)",
+                                "required":  false,
+                                "grid":  {
+                                             "columns":  [
+                                                             {
+                                                                 "headerName":  "Function Id",
+                                                                 "field":  "FunctionId"
+                                                             },
+                                                             {
+                                                                 "headerName":  "Job Title",
+                                                                 "field":  "JobTitle"
+                                                             }
+                                                         ],
+                                             "height":  300,
+                                             "rowSelection":  "single"
+                                         },
+                                "dataSourceConfig":  {
+                                                         "dataSourceGuid":  "$dataSourceGuid_2",
+                                                         "input":  {
+                                                                       "propertyInputs":  [
+
+                                                                                          ]
+                                                                   }
+                                                     },
+                                "useFilter":  true,
+                                "useDefault":  false
+                            },
+        "type":  "grid",
+        "summaryVisibility":  "Show",
+        "requiresTemplateOptions":  true,
+        "requiresKey":  true,
+        "requiresDataSource":  true
+    },
+    {
+        "key":  "nedapTeams",
+        "templateOptions":  {
+                                "label":  "Nedap Teams",
+                                "useObjects":  false,
+                                "useFilter":  false,
+                                "options":  [
+                                                "Option 1",
+                                                "Option 2",
+                                                "Option 3"
+                                            ],
+                                "useDataSource":  true,
+                                "dataSourceConfig":  {
+                                                         "dataSourceGuid":  "$dataSourceGuid_3",
+                                                         "input":  {
+                                                                       "propertyInputs":  [
+
+                                                                                          ]
+                                                                   }
+                                                     },
+                                "valueField":  "Id",
+                                "textField":  "DisplayName",
+                                "required":  true
+                            },
+        "type":  "multiselect",
+        "summaryVisibility":  "Show",
+        "textOrLabel":  "text",
+        "requiresTemplateOptions":  true,
+        "requiresKey":  true,
+        "requiresDataSource":  false
+    }
+]

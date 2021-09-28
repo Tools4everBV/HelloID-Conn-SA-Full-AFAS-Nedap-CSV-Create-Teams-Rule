@@ -1,0 +1,14 @@
+[
+    {
+        "name":  "afasFunctionCode",
+        "value":  "{{form.afasJobTitles.FunctionId}}"
+    },
+    {
+        "name":  "afasLocationId",
+        "value":  "{{form.afasOrgUnits.Id}}"
+    },
+    {
+        "name":  "nedapTeamsIds",
+        "value":  "{{form.nedapTeams.toJsonString}}"
+    }
+]
