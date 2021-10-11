@@ -356,10 +356,12 @@ function Get-NedapTeamList {
         $response = Invoke-WebRequest @webRequestSplatting
         $teams = $response.Content | ConvertFrom-Json
         Write-Output  $teams.teams
-    } catch {
+    }
+    catch {
         if ($_.ErrorDetails) {
             $errorReponse = $_.ErrorDetails
-        } elseif ($_.Exception.Response) {
+        }
+        elseif ($_.Exception.Response) {
             $reader = New-Object System.IO.StreamReader($_.Exception.Response.GetResponseStream())
             $errorReponse = $reader.ReadToEnd()
             $reader.Dispose()
@@ -371,11 +373,10 @@ Import-NedapCertificate -CertificatePath $script:CertificatePath  -CertificatePa
 
 $nedapTeams = Get-NedapTeamList  | Select-Object name, id, identificationNo
 
-ForEach($nedapTeam in $nedapTeams)
-        {
-            $returnObject = @{ Id=$nedapTeam.id; DisplayName=$nedapTeam.Name; identificationNo=$nedapTeam.identificationNo; }
-            Write-Output $returnObject                
-        } 
+ForEach ($nedapTeam in $nedapTeams) {
+    $returnObject = @{ Id = $nedapTeam.id; DisplayName = $nedapTeam.Name; identificationNo = $nedapTeam.identificationNo; }
+    Write-Output $returnObject                
+} 
 '@ 
 $tmpModel = @'
 [{"key":"DisplayName","type":0},{"key":"Id","type":0},{"key":"identificationNo","type":0}]
@@ -471,6 +472,10 @@ $tmpPsScript = @'
 # AFAS API Parameters #
 $token = $AfasToken;
 $baseUri = $AfasBaseUri;
+$includePositions = $false;
+
+# Set TLS to accept TLS, TLS 1.1 and TLS 1.2
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls -bor [Net.SecurityProtocolType]::Tls11 -bor [Net.SecurityProtocolType]::Tls12
 
 <#--------- AFAS script ----------#>
 # Default function to get paged connector data
@@ -495,13 +500,13 @@ function Get-AFASConnectorData {
 
         foreach ($record in $dataset.rows) { [void]$data.Value.add($record) }
 
-        $skip += 100
-        while ($dataset.rows.count -ne 0) {
+        $skip += $take
+        while (@($dataset.rows).count -eq $take) {
             $uri = $BaseUri + "/connectors/" + $Connector + "?skip=$skip&take=$take"
 
             $dataset = Invoke-RestMethod -Method Get -Uri $uri -Headers $Headers -UseBasicParsing
 
-            $skip += 100
+            $skip += $take
 
             foreach ($record in $dataset.rows) { [void]$data.Value.add($record) }
         }
@@ -512,37 +517,25 @@ function Get-AFASConnectorData {
     }
 }
 
-
-$organizationalUnits = New-Object System.Collections.ArrayList
-Get-AFASConnectorData -Token $token -BaseUri $baseUri -Connector "T4E_HelloID_OrganizationalUnits" ([ref]$organizationalUnits) 
-$afasLocations = $organizationalUnits | Select-Object ExternalId, DisplayName 
-
 $employments = New-Object System.Collections.ArrayList
 Get-AFASConnectorData -Token $token -BaseUri $baseUri -Connector "T4E_HelloID_Employments" ([ref]$employments)
 $employments = $employments | Select-Object Functie_code, Functie_omschrijving #| Group-Object Persoonsnummer -AsHashTable
 
-if($true -eq $includePositions)
-{
+if ($true -eq $includePositions) {
     $positions = New-Object System.Collections.ArrayList
     Get-AFASConnectorData -Token $token -BaseUri $baseUri -Connector "T4E_HelloID_Positions" ([ref]$positions)
     $positions = $positions | Select-Object Functie_code, Functie_omschrijving #| Group-Object Persoonsnummer -AsHashTable
+
+    $employments += $positions
 }
-
-    if($true -eq $includePositions)
-    {
-        $employments += $positions
-    }
     
-
-
 $afasEmployments = $employments | Sort-Object Functie_Code -Unique 
 
-ForEach($r in $employments)
-        {
-            #Write-Output $Site 
-            $returnObject = @{ FunctionId=$r.Functie_Code; JobTitle=$r.Functie_omschrijving }
-            Write-Output $returnObject                
-        }
+ForEach ($r in $afasEmployments) {
+    #Write-Output $Site 
+    $returnObject = @{ FunctionId = $r.Functie_Code; JobTitle = $r.Functie_omschrijving }
+    Write-Output $returnObject                
+}
 '@ 
 $tmpModel = @'
 [{"key":"FunctionId","type":0},{"key":"JobTitle","type":0}]
@@ -569,7 +562,6 @@ $baseUri = $AfasBaseUri;
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls -bor [Net.SecurityProtocolType]::Tls11 -bor [Net.SecurityProtocolType]::Tls12
 
 <#--------- AFAS script ----------#>
-
 # Default function to get paged connector data
 function Get-AFASConnectorData {
     param(
@@ -592,13 +584,13 @@ function Get-AFASConnectorData {
 
         foreach ($record in $dataset.rows) { [void]$data.Value.add($record) }
 
-        $skip += 100
-        while ($dataset.rows.count -ne 0) {
+        $skip += $take
+        while (@($dataset.rows).count -eq $take) {
             $uri = $BaseUri + "/connectors/" + $Connector + "?skip=$skip&take=$take"
 
             $dataset = Invoke-RestMethod -Method Get -Uri $uri -Headers $Headers -UseBasicParsing
 
-            $skip += 100
+            $skip += $take
 
             foreach ($record in $dataset.rows) { [void]$data.Value.add($record) }
         }
@@ -611,14 +603,13 @@ function Get-AFASConnectorData {
 
 $organizationalUnits = New-Object System.Collections.ArrayList
 Get-AFASConnectorData -Token $token -BaseUri $baseUri -Connector "T4E_HelloID_OrganizationalUnits" ([ref]$organizationalUnits) 
-$afasLocations = $organizationalUnits | Select-Object ExternalId, DisplayName | Where { $_.DisplayName -like '*medewerkers*' }
+$afasLocations = $organizationalUnits | Select-Object ExternalId, DisplayName | Where-Object { $_.DisplayName -like "*$searchValue*" }
 
-ForEach($afasLocation in $afasLocations)
-        {
-            #Write-Output $Site 
-            $returnObject = @{ Id=$afasLocation.ExternalId; DisplayName=$afasLocation.DisplayName; }
-            Write-Output $returnObject                
-        }
+ForEach ($afasLocation in $afasLocations) {
+    #Write-Output $Site 
+    $returnObject = @{ Id = $afasLocation.ExternalId; DisplayName = $afasLocation.DisplayName; }
+    Write-Output $returnObject                
+}
 '@ 
 $tmpModel = @'
 [{"key":"Id","type":0},{"key":"DisplayName","type":0}]
@@ -703,21 +694,19 @@ $afasLocation = $afasLocationId
 $nedapTeams = $nedapTeamsIds | ConvertFrom-Json
 $afasFunctionCode = $afasFunctionCode
 
-foreach($n in $nedapTeams)
-{
+foreach ($n in $nedapTeams) {
     $nedapTeamString = $nedapTeamString + $n.Id.ToString() + ","
 }
 
-$nedapTeamString = $nedapTeamString.Substring(0,$nedapTeamString.Length-1)
+$nedapTeamString = $nedapTeamString.Substring(0, $nedapTeamString.Length - 1)
 
 $rule = [PSCustomObject]@{
     "Department.ExternalId" = $afasLocation;
-    "Title.ExternalId" = $afasFunctionCode;
-    "NedapTeamId"= $nedapTeamString;
+    "Title.ExternalId"      = $afasFunctionCode;
+    "NedapTeamId"           = $nedapTeamString;
 }
 
-$rule | ConvertTo-Csv -NoTypeInformation -Delimiter ";" | % { $_ -replace '"', ""}  | Select-Object -Skip 1  | Add-Content $Path -Encoding UTF8
-
+$rule | ConvertTo-Csv -NoTypeInformation -Delimiter ";" | ForEach-Object { $_ -replace '"', "" }  | Select-Object -Skip 1  | Add-Content $Path -Encoding UTF8
 '@; 
 
 	$tmpVariables = @'
