@@ -1,6 +1,10 @@
 # AFAS API Parameters #
 $token = $AfasToken;
 $baseUri = $AfasBaseUri;
+$includePositions = $false;
+
+# Set TLS to accept TLS, TLS 1.1 and TLS 1.2
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls -bor [Net.SecurityProtocolType]::Tls11 -bor [Net.SecurityProtocolType]::Tls12
 
 <#--------- AFAS script ----------#>
 # Default function to get paged connector data
@@ -25,13 +29,13 @@ function Get-AFASConnectorData {
 
         foreach ($record in $dataset.rows) { [void]$data.Value.add($record) }
 
-        $skip += 100
-        while ($dataset.rows.count -ne 0) {
+        $skip += $take
+        while (@($dataset.rows).count -eq $take) {
             $uri = $BaseUri + "/connectors/" + $Connector + "?skip=$skip&take=$take"
 
             $dataset = Invoke-RestMethod -Method Get -Uri $uri -Headers $Headers -UseBasicParsing
 
-            $skip += 100
+            $skip += $take
 
             foreach ($record in $dataset.rows) { [void]$data.Value.add($record) }
         }
@@ -42,34 +46,22 @@ function Get-AFASConnectorData {
     }
 }
 
-
-$organizationalUnits = New-Object System.Collections.ArrayList
-Get-AFASConnectorData -Token $token -BaseUri $baseUri -Connector "T4E_HelloID_OrganizationalUnits" ([ref]$organizationalUnits) 
-$afasLocations = $organizationalUnits | Select-Object ExternalId, DisplayName 
-
 $employments = New-Object System.Collections.ArrayList
 Get-AFASConnectorData -Token $token -BaseUri $baseUri -Connector "T4E_HelloID_Employments" ([ref]$employments)
 $employments = $employments | Select-Object Functie_code, Functie_omschrijving #| Group-Object Persoonsnummer -AsHashTable
 
-if($true -eq $includePositions)
-{
+if ($true -eq $includePositions) {
     $positions = New-Object System.Collections.ArrayList
     Get-AFASConnectorData -Token $token -BaseUri $baseUri -Connector "T4E_HelloID_Positions" ([ref]$positions)
     $positions = $positions | Select-Object Functie_code, Functie_omschrijving #| Group-Object Persoonsnummer -AsHashTable
+
+    $employments += $positions
 }
-
-    if($true -eq $includePositions)
-    {
-        $employments += $positions
-    }
     
-
-
 $afasEmployments = $employments | Sort-Object Functie_Code -Unique 
 
-ForEach($r in $employments)
-        {
-            #Write-Output $Site 
-            $returnObject = @{ FunctionId=$r.Functie_Code; JobTitle=$r.Functie_omschrijving }
-            Write-Output $returnObject                
-        }
+ForEach ($r in $afasEmployments) {
+    #Write-Output $Site 
+    $returnObject = @{ FunctionId = $r.Functie_Code; JobTitle = $r.Functie_omschrijving }
+    Write-Output $returnObject                
+}
