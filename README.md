@@ -5,7 +5,13 @@ With this HelloID Service Automation Delegated Form you can add mapping rules to
  2. Select AFAS jobtitle (optional)
  3. Select the Nedap team to map
  4. Confirm the changes
- 
+
+## Versioning
+| Version | Description | Date |
+| - | - | - |
+| 1.0.1   | Added version number and updated all-in-one script | 2021/11/04  |
+| 1.0.0   | Initial release | 2021/09/28  |
+
 <!-- TABLE OF CONTENTS -->
 ## Table of Contents
 * [Description](#description)
@@ -66,5 +72,8 @@ This Powershell data source retrieves the available Nedap ONS teams from the con
 ### Delegated form task '[task]_Nedap-ons-add-teams-rule'
 This delegated form task will add a rule to the configured mapping file.
 
-# HelloID Docs
+## Getting help
+_If you need help, feel free to ask questions_
+
+## HelloID Docs
 The official HelloID documentation can be found at: https://docs.helloid.com/

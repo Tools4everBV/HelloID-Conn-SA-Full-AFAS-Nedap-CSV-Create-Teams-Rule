@@ -8,6 +8,7 @@ $baseUri = $AfasBaseUri;
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls -bor [Net.SecurityProtocolType]::Tls11 -bor [Net.SecurityProtocolType]::Tls12
 
 <#--------- AFAS script ----------#>
+
 # Default function to get paged connector data
 function Get-AFASConnectorData {
     param(
@@ -30,13 +31,13 @@ function Get-AFASConnectorData {
 
         foreach ($record in $dataset.rows) { [void]$data.Value.add($record) }
 
-        $skip += $take
-        while (@($dataset.rows).count -eq $take) {
+        $skip += 100
+        while ($dataset.rows.count -ne 0) {
             $uri = $BaseUri + "/connectors/" + $Connector + "?skip=$skip&take=$take"
 
             $dataset = Invoke-RestMethod -Method Get -Uri $uri -Headers $Headers -UseBasicParsing
 
-            $skip += $take
+            $skip += 100
 
             foreach ($record in $dataset.rows) { [void]$data.Value.add($record) }
         }
@@ -49,10 +50,11 @@ function Get-AFASConnectorData {
 
 $organizationalUnits = New-Object System.Collections.ArrayList
 Get-AFASConnectorData -Token $token -BaseUri $baseUri -Connector "T4E_HelloID_OrganizationalUnits" ([ref]$organizationalUnits) 
-$afasLocations = $organizationalUnits | Select-Object ExternalId, DisplayName | Where-Object { $_.DisplayName -like "*$searchValue*" }
+$afasLocations = $organizationalUnits | Select-Object ExternalId, DisplayName | Where { $_.DisplayName -like '*medewerkers*' }
 
-ForEach ($afasLocation in $afasLocations) {
-    #Write-Output $Site 
-    $returnObject = @{ Id = $afasLocation.ExternalId; DisplayName = $afasLocation.DisplayName; }
-    Write-Output $returnObject                
-}
+ForEach($afasLocation in $afasLocations)
+        {
+            #Write-Output $Site 
+            $returnObject = @{ Id=$afasLocation.ExternalId; DisplayName=$afasLocation.DisplayName; }
+            Write-Output $returnObject                
+        }
