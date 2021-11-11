@@ -73,7 +73,7 @@ This Powershell data source retrieves the available Nedap ONS teams from the con
 This delegated form task will add a rule to the configured mapping file.
 
 ## Getting help
-_If you need help, feel free to ask questions_
+If you need help, feel free to ask questions on our [forum](https://forum.helloid.com/forum/helloid-connectors/service-automation/562-helloid-sa-nedap-create-employeerange-mapping)
 
 ## HelloID Docs
 The official HelloID documentation can be found at: https://docs.helloid.com/
