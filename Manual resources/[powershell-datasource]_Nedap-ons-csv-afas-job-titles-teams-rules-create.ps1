@@ -46,12 +46,12 @@ function Get-AFASConnectorData {
     }
 }
 
-$employments = New-Object System.Collections.ArrayList
+$employments = [System.Collections.ArrayList]::new()
 Get-AFASConnectorData -Token $token -BaseUri $baseUri -Connector "T4E_HelloID_Employments" ([ref]$employments)
 $employments = $employments | Select-Object Functie_code, Functie_omschrijving #| Group-Object Persoonsnummer -AsHashTable
 
 if ($true -eq $includePositions) {
-    $positions = New-Object System.Collections.ArrayList
+    $positions = [System.Collections.ArrayList]::new()
     Get-AFASConnectorData -Token $token -BaseUri $baseUri -Connector "T4E_HelloID_Positions" ([ref]$positions)
     $positions = $positions | Select-Object Functie_code, Functie_omschrijving #| Group-Object Persoonsnummer -AsHashTable
 
